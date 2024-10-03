@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Catch the Falling Objects!</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+      overflow: hidden; /* Hide scrollbars */
+    }
+
+    .game-container {
+      width: 600px;
+      height: 400px;
+      background-color: #70c5ce; /* Sky blue background */
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden; /* Hide content that overflows */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .player {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 50px;
+      background-color: #ffcc00; /* Yellow player */
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .object {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ff4d4d; /* Red objects */
+      transition: transform 0.5s ease; /* Smooth falling animation */
+    }
+
+    .score {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      color: white;
+    }
+
+    .game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 24px;
+      text-align: center;
+      display: none; /* Initially hidden */
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="player"></div>
+    <div class="score">0</div>
+    <div class="game-over">Game Over! <br> Your Score: <span id="final-score"></span> <br> <button onclick="startGame()">Play Again</button></div>
+  </div>
+
+  <script>
+    const player = document.querySelector('.player');
+    const scoreElement = document.querySelector('.score');
+    const gameContainer = document.querySelector('.game-container');
+    const gameOverScreen = document.querySelector('.game-over');
+    const finalScoreElement = document.getElementById('final-score');
+    let score = 0;
+    let objects = [];
+    let gameOver = false;
+
+    function startGame() {
+      score = 0;
+      scoreElement.textContent = score;
+      objects = [];
+      gameOver = false;
+      gameOverScreen.style.display = 'none';
+      player.style.left = '50%';
+      player.style.transform = 'translateX(-50%)';
+      requestAnimationFrame(gameLoop);
+    }
+
+    function createObject() {
+      const object = document.createElement('div');
+      object.classList.add('object');
+      object.style.left = Math.random() * (gameContainer.offsetWidth - 30) + 'px'; // Random horizontal position
+      object.style.top = '-30px'; // Start above the container
+      gameContainer.appendChild(object);
+      objects.push(object);
+    }
+
+    function gameLoop() {
+      if (!gameOver) {
+        // Move objects down
+        objects.forEach(object => {
+          object.style.top = parseInt(object.style.top) + 2 + 'px';
+          if (parseInt(object.style.top) > gameContainer.offsetHeight) {
+            object.remove();
+            objects.splice(objects.indexOf(object), 1);
+          }
+        });
+
+        // Create new objects
+        if (Math.random() < 0.01) {
+          createObject();
+        }
+
+        // Check for collisions
+        objects.forEach(object => {
+          if (
+            parseInt(object.style.left) + 30 > parseInt(player.style.left) &&
+            parseInt(object.style.left) < parseInt(player.style.left) + 50 &&
+            parseInt(object.style.top) + 30 > gameContainer.offsetHeight - 50
+          ) {
+            object.remove(); 
+            objects.splice(objects.indexOf(object), 1);
+            gameOver = true;
+            gameOverScreen.style.display = 'block';
+            finalScoreElement.textContent = score;
+          }
+        });
+
+        // Update score
+        scoreElement.textContent = score;
+
+        // Continue the game loop
+        requestAnimationFrame(gameLoop);
+      }
+    }
+
+    // Event listener for player movement
+    gameContainer.addEventListener('click', event => {
+      if (!gameOver) {
+        player.style.left = event.clientX - 25 + 'px'; // Center the player
+        score++;
+      }
+    });
+
+    // Start the game on page load
+    startGame();
+  </script>
+</body>
+</html>
+
+   
